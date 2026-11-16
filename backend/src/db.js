@@ -148,8 +148,12 @@ class MongoStore {
     }
 }
 
-// MONGODB_URI is the name the Vercel MongoDB Atlas integration uses
-const MONGO = process.env.MONGO_URI || process.env.MONGODB_URI;
+// The Vercel MongoDB Atlas integration names this <PREFIX>_URL (or MONGODB_URI)
+const MONGO =
+    process.env.MONGO_URI ||
+    process.env.MONGODB_URI ||
+    process.env.MONGODB_URL ||
+    process.env.STORAGE_URL;
 
 // On Vercel the file system is read-only except /tmp, which is wiped often.
 // The file store there is only a stand-in until a MongoDB database is connected.
