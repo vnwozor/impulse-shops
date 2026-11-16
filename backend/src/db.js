@@ -92,6 +92,12 @@ class FileStore {
         return true;
     }
 
+    async claim(name, id) {
+        if (this.col(name).some((d) => d._id === id)) return false;
+        await this.insert(name, { _id: id, at: new Date().toISOString() });
+        return true;
+    }
+
     async clear() {
         this.data = {};
         await this.persist();
@@ -141,8 +147,19 @@ class MongoStore {
         return res.deletedCount > 0;
     }
 
+    // true only for the first caller; the unique _id makes this safe across servers
+    async claim(name, id) {
+        try {
+            await this.c(name).insertOne({ _id: id, at: new Date().toISOString() });
+            return true;
+        } catch (e) {
+            if (e.code === 11000) return false;
+            throw e;
+        }
+    }
+
     async clear() {
-        for (const name of ["products", "categories", "orders", "settings", "subscribers"]) {
+        for (const name of ["products", "categories", "orders", "settings", "subscribers", "meta"]) {
             await this.c(name).deleteMany({});
         }
     }

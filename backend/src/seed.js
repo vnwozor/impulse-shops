@@ -230,8 +230,27 @@ const products = [
     }),
 ];
 
+// remove copies with the same slug (keeps the oldest). Slugs are unique by design,
+// so this only ever removes duplicates created by two servers seeding at once.
+async function removeDuplicates(name) {
+    const seen = new Set();
+    const list = (await db.all(name)).sort((a, b) => String(a.createdAt || a._id).localeCompare(String(b.createdAt || b._id)));
+    for (const doc of list) {
+        if (seen.has(doc.slug)) await db.remove(name, doc._id);
+        else seen.add(doc.slug);
+    }
+}
+
 export async function seedIfEmpty({ reset = false } = {}) {
     if (reset) await db.clear();
+
+    // only one server instance gets to load the samples, even if several start together
+    const first = await db.claim("meta", "seeded");
+    if (!first) return removeDuplicates("categories").then(() => removeDuplicates("products"));
+
+    // also cleans up databases seeded before this lock existed
+    await removeDuplicates("categories");
+    await removeDuplicates("products");
 
     const existing = await db.get("settings", "site");
     if (!existing) await db.put("settings", "site", defaultSettings());
