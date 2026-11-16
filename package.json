@@ -1,0 +1,12 @@
+{
+  "name": "impulse-shops",
+  "private": true,
+  "description": "Impulse.shops by Mainroadlife: storefront, admin dashboard and API",
+  "scripts": {
+    "install:all": "npm --prefix backend install && npm --prefix frontend install && npm --prefix admin install",
+    "dev:api": "npm --prefix backend run dev",
+    "dev:store": "npm --prefix frontend run dev",
+    "dev:admin": "npm --prefix admin run dev",
+    "build": "npm --prefix frontend run build && npm --prefix admin run build"
+  }
+}
